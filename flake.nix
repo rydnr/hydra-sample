@@ -1,19 +1,26 @@
 {
-  description = "A flake for building Hello World";
+  description = "A flake for building a simple 'hello.c' program";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
+  inputs = { nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable"; };
 
-  outputs = { self, nixpkgs }: {
+  outputs = { self, nixpkgs }:
+    let
+      pkgs = import nixpkgs { system = "x86_64-linux"; };
 
-    defaultPackage.x86_64-linux =
-      # Notice the reference to nixpkgs here.
-      with import nixpkgs { system = "x86_64-linux"; };
-      stdenv.mkDerivation {
-        name = "hello";
-        src = self;
-        buildPhase = "gcc -o hello ./hello.c";
-        installPhase = "mkdir -p $out/bin; install -t $out/bin hello";
+      helloSrc = pkgs.fetchFromGitHub {
+        owner = "rydnr";
+        repo = self.name;
+        rev = self.rev;
+        sha256 = self.checksum;
       };
 
-  };
+      hello = pkgs.stdenv.mkDerivation {
+        name = "hello";
+        src = ./.;
+        phases = [ "buildPhase" ];
+        buildPhase = ''
+          gcc -o hello hello.c
+        '';
+      };
+    in { defaultPackage = hello; };
 }
