@@ -16,7 +16,7 @@
 
       hello = pkgs.stdenv.mkDerivation {
         name = "hello";
-        src = ./.;
+        src = helloSrc;
         phases = [ "buildPhase" ];
         buildPhase = ''
           gcc -o hello hello.c
